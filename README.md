@@ -1,2 +1,2 @@
-# jarupgrade
-a tool for upgrade jar in springboot jar
+# jar-upgrade
+a tool for upgrade executable jar packaged by springboot
