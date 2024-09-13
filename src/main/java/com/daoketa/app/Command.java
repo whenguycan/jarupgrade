@@ -1,7 +1,6 @@
-package com.daoketa.jar.upgrade;
+package com.daoketa.app;
 
-import lombok.AllArgsConstructor;
-import org.springframework.util.Assert;
+import com.daoketa.util.Ast;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,9 +8,13 @@ import java.util.stream.Collectors;
 /**
  * @author wangcy 2024/9/12 8:45
  */
-@AllArgsConstructor
 public class Command {
-	
+
+	public Command(String tag, String param) {
+		this.tag = tag;
+		this.param = param;
+	}
+
 	public enum Tag {
 		s("-s"), p("-p"), all("--all"),
 		;
@@ -42,15 +45,15 @@ public class Command {
 			}
 			for(int i=0,len=argList.size(); i<len; i++) {
 				String tag = argList.get(i);
-				Assert.isTrue(Tag.isNormal(tag), "不识别的参数 " + tag);
+				Ast.isTrue(Tag.isNormal(tag), "不识别的参数 " + tag);
 				i++;
-				Assert.isTrue(i < len, "参数值丢失 " + tag);
-				Assert.isTrue(!commandMap.containsKey(tag), "重复的参数 " + tag);
+				Ast.isTrue(i < len, "参数值丢失 " + tag);
+				Ast.isTrue(!commandMap.containsKey(tag), "重复的参数 " + tag);
 				commandMap.put(tag, new Command(tag, argList.get(i)));
 			}
 		}
 		boolean conflict = commandMap.containsKey(Tag.p.value) && commandMap.containsKey(Tag.all.value);
-		Assert.isTrue(!conflict, "参数冲突 " + Tag.p.value + "," + Tag.all.value);
+		Ast.isTrue(!conflict, "参数冲突 " + Tag.p.value + "," + Tag.all.value);
 		return new ArrayList<>(commandMap.values());
 	}
 

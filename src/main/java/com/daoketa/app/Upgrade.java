@@ -1,7 +1,7 @@
-package com.daoketa.jar.upgrade;
+package com.daoketa.app;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.Assert;
+import com.daoketa.util.Ast;
+import com.daoketa.util.StrUtils;
 
 import java.io.*;
 import java.util.*;
@@ -18,13 +18,19 @@ import java.util.zip.ZipEntry;
  */
 public class Upgrade {
 	
+	final String defaultSource = "goisan-admin.jar";
+	
 	private final File dir = new File(System.getProperty("user.dir"));
-	private String source = "goisan-admin.jar";
+	private String source = null;
 	private List<File> patchList = new ArrayList<>();
 	
 	public Upgrade(String[] args) {
 		List<Command> commandList = Command.extract(args);
 		commandList.stream().filter(c -> Command.Tag.s.is(c.tag)).findFirst().ifPresent(c -> source = c.param);
+		if(source == null) {
+			System.out.println("-s 参数没有赋值 将使用默认文件 " + defaultSource);
+			source = defaultSource;
+		}
 		commandList.stream().filter(c -> Command.Tag.isAll(c.tag)).findFirst().ifPresent(c -> {
 			File[] files = dir.listFiles();
 			if(files != null) {
@@ -34,26 +40,29 @@ public class Upgrade {
 		if(patchList.isEmpty()) {
 			commandList.stream().filter(c -> Command.Tag.p.is(c.tag)).findFirst().ifPresent(c -> {
 				if(c.param.contains(",")) {
-					Arrays.stream(c.param.split(",")).filter(StringUtils::isNotEmpty).forEach(p -> patchList.add(new File(dir, p)));
+					Arrays.stream(c.param.split(",")).filter(StrUtils::isNotEmpty).forEach(p -> patchList.add(new File(dir, p)));
 				}else {
 					patchList.add(new File(dir, c.param));
 				}
 			});
 		}
-		Assert.notEmpty(patchList, "没有找到补丁");
+		Ast.notEmpty(patchList, "没有找到补丁");
 	}
 	
 	public void execute() throws Exception {
 		Map<String, File> patchMap = patchList.stream().collect(Collectors.toMap(File::getName, Function.identity()));
 		JarFile jarFile = new JarFile(new File(dir, source));
-		JarOutputStream jos = new JarOutputStream(new FileOutputStream(new File(dir, source.replace(".jar", "-" + System.currentTimeMillis() + ".jar"))));
+		File targetFile = new File(dir, source.replace(".jar", "-" + System.currentTimeMillis() + ".jar"));
+		JarOutputStream jos = new JarOutputStream(new FileOutputStream(targetFile));
 		Enumeration<JarEntry> entries = jarFile.entries();
+		Set<String> keySet = new HashSet<>();
 		while(entries.hasMoreElements()) {
 			JarEntry jarEntry = entries.nextElement();
 			File file = patchMap.get(jarEntry.getName().replace("BOOT-INF/lib/", ""));
 			byte[] buf = new byte[1024];
 			int len;
 			if(file != null) {
+				keySet.add(file.getName());
 				System.out.println("替换补丁 " + file.getName());
 				JarEntry next = new JarEntry(jarEntry.getName());
 				InputStream is = new FileInputStream(file);
@@ -78,7 +87,11 @@ public class Upgrade {
 				is.close();
 			}
 		}
+		patchMap.entrySet().stream()
+				.filter(entry -> !keySet.contains(entry.getKey()))
+				.forEach(entry -> System.out.println("跳过不存在的补丁 " + entry.getKey()));
 		jos.close();
+		System.out.println("新文件生成成功 " + targetFile.getAbsolutePath());
 	}
 	
 }

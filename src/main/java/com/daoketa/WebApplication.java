@@ -1,6 +1,6 @@
 package com.daoketa;
 
-import com.daoketa.jar.upgrade.Upgrade;
+import com.daoketa.app.Upgrade;
 
 /**
  * @author wangcy 2024/9/11 16:18
