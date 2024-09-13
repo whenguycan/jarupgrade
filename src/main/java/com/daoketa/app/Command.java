@@ -1,6 +1,6 @@
 package com.daoketa.app;
 
-import com.daoketa.util.Ast;
+import com.daoketa.util.Assertion;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,15 +45,15 @@ public class Command {
 			}
 			for(int i=0,len=argList.size(); i<len; i++) {
 				String tag = argList.get(i);
-				Ast.isTrue(Tag.isNormal(tag), "不识别的参数 " + tag);
+				Assertion.isTrue(Tag.isNormal(tag), "不识别的参数 " + tag);
 				i++;
-				Ast.isTrue(i < len, "参数值丢失 " + tag);
-				Ast.isTrue(!commandMap.containsKey(tag), "重复的参数 " + tag);
+				Assertion.isTrue(i < len, "参数值丢失 " + tag);
+				Assertion.isTrue(!commandMap.containsKey(tag), "重复的参数 " + tag);
 				commandMap.put(tag, new Command(tag, argList.get(i)));
 			}
 		}
 		boolean conflict = commandMap.containsKey(Tag.p.value) && commandMap.containsKey(Tag.all.value);
-		Ast.isTrue(!conflict, "参数冲突 " + Tag.p.value + "," + Tag.all.value);
+		Assertion.isTrue(!conflict, "参数冲突 " + Tag.p.value + "," + Tag.all.value);
 		return new ArrayList<>(commandMap.values());
 	}
 

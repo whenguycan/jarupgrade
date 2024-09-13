@@ -3,7 +3,7 @@ package com.daoketa.util;
 /**
  * @author wangcy 2024/9/13 10:19
  */
-public abstract class Ast {
+public abstract class Assertion {
 
 	public static void isTrue(boolean exp, String message) {
 		if(!exp) {

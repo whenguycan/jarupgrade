@@ -1,6 +1,6 @@
 package com.daoketa.app;
 
-import com.daoketa.util.Ast;
+import com.daoketa.util.Assertion;
 import com.daoketa.util.StrUtils;
 
 import java.io.*;
@@ -46,7 +46,7 @@ public class Upgrade {
 				}
 			});
 		}
-		Ast.notEmpty(patchList, "没有找到补丁");
+		Assertion.notEmpty(patchList, "没有找到补丁");
 	}
 	
 	public void execute() throws Exception {
